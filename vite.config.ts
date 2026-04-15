@@ -16,36 +16,6 @@ export default defineConfig(({ mode }) => {
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // Vendor chunks
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('recharts')) {
-              return 'charts';
-            }
-            // Other node_modules
-            return 'vendor';
-          }
-          // Page chunks
-          if (id.includes('/pages/Agent/')) {
-            return 'pages-agent';
-          }
-          if (id.includes('/pages/Admin/')) {
-            return 'pages-admin';
-          }
-          if (id.includes('/pages/Notices/')) {
-            return 'pages-notices';
-          }
-          if (id.includes('/pages/ForumMonitoring/')) {
-            return 'pages-forum-monitoring';
-          }
-        }
-      }
-    },
     chunkSizeWarningLimit: 600,
   },
   server: {
