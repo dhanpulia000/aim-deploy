@@ -1,0 +1,63 @@
+{
+  "lang": {
+    "switcherAria": "언어"
+  },
+  "common": {
+    "loading": "로딩 중…",
+    "processingTitle": "이슈 처리 중…",
+    "processingProgressLabel": "진행 상황",
+    "processingHint": "처리 중입니다. 창을 닫지 마세요.",
+    "logoTitle": "메인 화면으로 이동",
+    "userManual": "사용설명서",
+    "userManualTitle": "사용설명서 (새 탭)"
+  },
+  "nav": {
+    "main": "메인화면",
+    "monitoring": "모니터링",
+    "dailyReport": "일일보고서",
+    "boardStatsGroup": "게시판 통계",
+    "boardCounts": "게시판별 건수",
+    "listSnapshots": "목록(기간) 스냅샷",
+    "partnerArchiving": "파트너 영상 아카이빙",
+    "calendar": "캘린더",
+    "admin": "관리"
+  },
+  "admin": {
+    "pageTitle": "데이터 관리",
+    "tabs": {
+      "agents": "에이전트 ({{count}})",
+      "schedules": "스케줄 관리",
+      "scheduleCalendar": "스케줄 캘린더",
+      "sla": "SLA 정책",
+      "categories": "분류 기준 관리",
+      "projects": "프로젝트 관리",
+      "prompts": "AI 프롬프트",
+      "performance": "에이전트 성과"
+    }
+  },
+  "login": {
+    "titleSignIn": "로그인",
+    "titleOtp": "이메일 인증",
+    "subtitleOtp": "{{email}} 로 인증 코드를 보냈습니다. 메일함을 확인하세요.",
+    "subtitlePassword": "계정으로 로그인하여 프로젝트를 전환하세요.",
+    "email": "이메일",
+    "emailPlaceholder": "이메일을 입력하세요",
+    "password": "비밀번호",
+    "agentIdOptional": "에이전트 ID (선택)",
+    "agentIdHint": "기존 보고서 업로드용",
+    "agentIdPlaceholder": "예: a1, a2, a3",
+    "otpLabel": "인증 코드 (6자리)",
+    "backToPassword": "← 비밀번호로 돌아가기",
+    "resend": "코드 다시 보내기",
+    "resendIn": "{{seconds}}초 후 재전송",
+    "submitSignIn": "로그인",
+    "submitVerify": "인증하기",
+    "submittingSignIn": "로그인 중…",
+    "submittingVerify": "확인 중…",
+    "backToDashboard": "현황판으로 돌아가기",
+    "errorOtpLength": "6자리 인증 코드를 입력하세요.",
+    "errorSessionExpired": "세션이 만료되었습니다. 다시 로그인하세요.",
+    "errorUnknown": "로그인 중 알 수 없는 오류가 발생했습니다.",
+    "errorResend": "코드를 다시 보낼 수 없습니다."
+  }
+}

@@ -1,0 +1,1 @@
+ALTER TABLE WorkChecklistItem ADD COLUMN url TEXT;

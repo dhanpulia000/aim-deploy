@@ -1,0 +1,941 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  agentId    String
+  agent      Agent?   @relation(fields: [agentId], references: [id])
+  date       String
+  fileType   String
+  fileName   String?
+  reportType String
+  status     String   @default("processed")
+  uploadedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  vocItems   ReportItemVOC[]
+  issueItems ReportItemIssue[]
+  dataItems  ReportItemData[]
+
+  @@index([agentId])
+  @@index([date])
+  @@index([reportType])
+}
+
+model ReportItemVOC {
+  id       String @id @default(cuid())
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  // VOC fields
+  date        String
+  source      String?
+  category    String?
+  subcategory String?
+  type        String?
+  sentiment   String?
+  importance  String?
+  content     String?
+  judgment    String?
+  working     String?
+  remarks     String?
+  link        String?
+
+  // Extra fields (for Excel columns)
+  extraField14 String?
+  extraField15 String?
+  extraField16 String?
+  extraField17 String?
+  extraField18 String?
+  extraField19 String?
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+  @@index([date])
+}
+
+// Category Group (대분류) - 동적 카테고리 그룹
+model CategoryGroup {
+  id          Int      @id @default(autoincrement())
+  name        String // 대분류 이름 (예: "서버", "퍼포먼스")
+  code        String // stable internal code (SERVER, PERFORMANCE, BUG, ...)
+  color       String? // 색상 코드 (hex, 예: "#FF6B35" for Orange, "#4ECDC4" for Green, "#45B7D1" for Blue)
+  description String? // 설명
+  isActive    Boolean  @default(true)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int      @default(1) // 프로젝트 ID (기본값 1: Default Project)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  categories Category[]
+  issues     ReportItemIssue[]
+
+  @@unique([projectId, code]) // 프로젝트별로 code가 unique해야 함
+  @@index([code])
+  @@index([isActive])
+  @@index([projectId])
+}
+
+// System Code (시스템 기준 정보) - 고정값 관리
+model SystemCode {
+  id           Int      @id @default(autoincrement())
+  type         String // 코드 타입: 'ISSUE_TYPE', 'IMPORTANCE', 'SENTIMENT', 'PLATFORM', 'ISSUE_RESULT', 'CRAWLER_GAME'
+  code         String // 코드 값 (예: 'OPINION', 'HIGH', 'POS', 'STEAM')
+  label        String // 표시 레이블 (예: '의견', '상', '긍정', 'Steam')
+  displayOrder Int? // 표시 순서
+  isActive     Boolean  @default(true)
+  metadata     String? // 추가 메타데이터 (JSON 문자열)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([type, code])
+  @@index([type])
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+// Category (중분류) - 동적 카테고리
+model Category {
+  id          Int           @id @default(autoincrement())
+  group       CategoryGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     Int
+  name        String // 중분류 이름 (예: "접속 불가", "프레임 드랍")
+  code        String // stable internal code (optional)
+  importance  String        @default("MEDIUM") // 상 / 중 / 하 (HIGH, MEDIUM, LOW)
+  description String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  issues ReportItemIssue[]
+
+  @@unique([groupId, code]) // 그룹별로 code가 unique해야 함
+  @@index([groupId])
+  @@index([code])
+  @@index([isActive])
+}
+
+model ReportItemIssue {
+  id              String   @id @default(cuid())
+  reportId        String
+  report          Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  project         Project? @relation(fields: [projectId], references: [id])
+  projectId       Int?
+  channel         Channel? @relation(fields: [channelId], references: [id])
+  channelId       Int?
+  assignedAgent   Agent?   @relation("IssueAssignedAgent", fields: [assignedAgentId], references: [id])
+  assignedAgentId String?
+
+  // Issue fields
+  date           String
+  legacyCategory String? // 레거시 필드 (마이그레이션 후 제거 예정)
+  detail         String?
+  testResult     String?
+  summary        String?
+  link           String?
+  time           String?
+  severity       Int?
+  source         String  @default("system")
+  status         String  @default("OPEN")
+  sentiment      String  @default("neu")
+
+  // 동적 카테고리 시스템
+  importance      String         @default("MEDIUM") // HIGH, MEDIUM, LOW
+  categoryGroup   CategoryGroup? @relation(fields: [categoryGroupId], references: [id])
+  categoryGroupId Int?
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  categoryId      Int?
+  otherGameTitle  String? // OTHER_GAME 그룹용: 실제 게임 제목
+
+  // 외부 소스 추적 (Naver Cafe 등)
+  sourceUrl        String? // 원본 포스트 URL
+  externalPostId   String? // Naver Cafe article ID 등 외부 시스템 ID
+  externalSource   String? // 'NAVER_CAFE_PUBG_PC' or 'NAVER_CAFE_PUBG_MOBILE'
+  monitoredUrl     MonitoredUrl?   @relation(fields: [monitoredUrlId], references: [id])
+  monitoredUrlId   Int?
+  monitoredBoard   MonitoredBoard? @relation(fields: [monitoredBoardId], references: [id])
+  monitoredBoardId Int?
+
+  // 스크린샷 캡처
+  screenshotPath String? // 로컬에 저장된 스크린샷 파일 경로
+  postImagePaths String? // 게시글 본문 이미지 경로들(JSON 문자열 배열, uploads 기준 상대경로)
+  hasImages      Boolean @default(false) // 게시글에 이미지가 있는지 여부
+  requiresLogin  Boolean @default(false) // 계정이 있어야만 확인할 수 있는 게시글인지 여부
+
+  // Discourse (inZOI Forums) 지표
+  discourseViews      Int?
+  discourseLikeCount  Int?
+  discourseReplyCount Int?
+
+  // Slack 메시지 추적
+  slackMessageTs String? @unique // Slack 메시지의 유니크 타임스탬프 ID
+  slackChannelId String? // 수집된 채널 ID
+
+  // AI 분류 정보
+  aiClassificationReason String? // AI 분류 이유 (AI가 왜 이 카테고리로 분류했는지 설명)
+  aiClassificationMethod String? // 분류 방법: 'AI' 또는 'RULE' 또는 null (AI 실패 시 규칙 기반)
+  trend                  String? // 동향/토픽 요약 (예: '부정적', '버그제보', '점검문의') - 3단어 이내
+
+  // 댓글 동향 정보 (네이버 카페 크롤링)
+  commentCount    Int     @default(0) // 댓글 개수
+  scrapedComments String? // 수집된 댓글 리스트를 JSON 문자열로 저장 (Text 타입)
+  isHotTopic      Boolean @default(false) // 댓글이 많거나 중요 인물의 글인 경우 True
+
+  // 확인/처리 상태
+  checkedAt     DateTime? // URL 클릭 또는 확인 체크 시
+  checkedBy     String? // 확인한 에이전트 ID
+  processedAt   DateTime? // 처리 완료 체크 시
+  processedBy   String? // 처리한 에이전트 ID
+  slaBreachedAt DateTime? // SLA 위반 시각 (중복 알림 방지)
+
+  // 보고서 제외 상태
+  excludedFromReport Boolean   @default(false) // 일일 보고서 및 모니터링 대응에서 제외 여부
+  excludedAt         DateTime? // 보고서 제외 처리 시각
+  excludedBy         String? // 보고서 제외 처리한 에이전트 ID
+
+  // 원본 게시글 작성 시간
+  sourceCreatedAt DateTime? // 원본 게시글의 작성 시간 (네이버 카페, 슬랙 등에서 추출)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  comments           IssueComment[]
+  shareLogs          IssueShareLog[]
+  classificationLogs AIClassificationLog[]
+  commentWatch       IssueCommentWatch?
+
+  @@index([reportId])
+  @@index([date])
+  @@index([status])
+  @@index([checkedAt])
+  @@index([processedAt])
+  @@index([projectId])
+  @@index([channelId])
+  @@index([assignedAgentId])
+  @@index([slaBreachedAt])
+  @@index([categoryGroupId])
+  @@index([categoryId])
+  @@index([importance])
+  @@index([externalPostId])
+  @@index([sourceUrl])
+  @@index([monitoredUrlId])
+  @@index([monitoredBoardId])
+  @@index([slackMessageTs])
+  @@index([slackChannelId])
+}
+
+// 모니터링 URL (Naver Cafe 등)
+model MonitoredUrl {
+  id        Int       @id @default(autoincrement())
+  url       String    @unique
+  cafeGame  String // 'PUBG_PC' or 'PUBG_MOBILE' (SQLite는 enum 미지원)
+  label     String? // 관리용 이름 (예: 'PC 카페 공지 1', '모바일 카페 버그 제보 글')
+  enabled   Boolean   @default(true)
+  interval  Int       @default(60) // seconds, basic polling interval
+  lastRunAt DateTime?
+  project   Project?  @relation(fields: [projectId], references: [id])
+  projectId Int? // 프로젝트 ID (선택)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  issues ReportItemIssue[]
+
+  @@index([enabled])
+  @@index([cafeGame])
+  @@index([projectId])
+}
+
+// 모니터링 게시판 (Naver Cafe 전체글보기 등)
+model MonitoredBoard {
+  id            Int       @id @default(autoincrement())
+  cafeGame      String // 'PUBG_PC' or 'PUBG_MOBILE' (SQLite는 enum 미지원)
+  listUrl       String    @unique // Naver cafe 전체글보기 URL for this board (중복 방지)
+  name          String // 게시판 이름 (예: 'PC 카페 전체글', '모바일 버그 게시판')
+  url           String // 타겟 URL (크롤링 대상 URL)
+  label         String? // 관리용 이름 (deprecated: name 사용 권장)
+  enabled       Boolean   @default(true)
+  isActive      Boolean   @default(true) // enabled와 동일한 목적 (호환성)
+  interval      Int       @default(300) // seconds, scan interval per board (기본 5분)
+  checkInterval Int       @default(300) // seconds, check interval (interval과 동일한 목적, 호환성, 기본 5분)
+  lastArticleId String? // 최근에 처리한 articleId (string)
+  lastScanAt    DateTime? // last time this board was scanned
+  project       Project?  @relation(fields: [projectId], references: [id])
+  projectId     Int? // 프로젝트 ID (선택)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  issues          ReportItemIssue[]
+  dailySnapshots  BoardListDailySnapshot[]
+
+  @@index([enabled])
+  @@index([isActive])
+  @@index([cafeGame])
+  @@index([projectId])
+}
+
+model IssueComment {
+  id                Int             @id @default(autoincrement())
+  issue             ReportItemIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId           String
+  author            Agent?          @relation(fields: [authorId], references: [id])
+  authorId          String?
+  body              String
+  externalCommentId String? // Naver Cafe comment ID 등 외부 시스템 ID
+  createdAt         DateTime        @default(now())
+
+  @@index([issueId])
+  @@index([authorId])
+  @@index([externalCommentId])
+}
+
+model ReportItemData {
+  id       String @id @default(cuid())
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  // Data fields
+  category       String?
+  date           String
+  author         String?
+  communityIssue String?
+  share          String?
+  request        String?
+  remarks        String?
+  createdAt      DateTime @default(now())
+
+  @@index([reportId])
+  @@index([date])
+}
+
+model WeeklyReport {
+  id               String   @id @default(cuid())
+  agentId          String
+  reportType       String
+  period           String
+  startDate        String
+  endDate          String
+  dailyReportCount Int
+  status           String   @default("completed")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  statistics      WeeklyStat?
+  charts          String? // JSON string for charts data
+  majorIssueStats String? // JSON string for major issue stats
+  sharedIssues    String? // JSON string for shared issues
+  trends          String? // JSON string for trends
+  vocData         String? // JSON string for VOC data
+  dataSheet       String? // JSON string for Data sheet
+  dailyReports    String? // JSON string for daily reports
+
+  @@index([agentId])
+  @@index([reportType])
+  @@index([startDate])
+}
+
+model WeeklyStat {
+  id             String       @id @default(cuid())
+  weeklyReportId String       @unique
+  weeklyReport   WeeklyReport @relation(fields: [weeklyReportId], references: [id], onDelete: Cascade)
+
+  totalCollected     Int?
+  vocCount           Int?
+  issueCount         Int?
+  dataCount          Int?
+  totalIssues        Int?
+  totalProcessed     Int?
+  processingRate     String?
+  averageDailyIssues String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("AGENT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents               Agent[]
+  auditLogs            AuditLog[]
+  classificationLogs   AIClassificationLog[]
+  loginOtpChallenges     LoginOtpChallenge[]
+  workChecklistExecutions WorkChecklistExecution[]
+  workChecklistAssignees  WorkChecklistAssignee[]
+}
+
+/// SQLite 런타임은 better-sqlite3 + 마이그레이션 기준 (Prisma는 문서/스크립트용)
+model LoginOtpChallenge {
+  id           String  @id
+  userId       Int
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash     String
+  expiresAt    String
+  attemptCount Int     @default(0)
+  createdAt    String
+  lastResendAt String?
+
+  @@map("LoginOtpChallenge")
+}
+
+model Project {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  severityRules String? // JSON: AI가 참고할 게임별 중요도 산정 기준 텍스트
+  reportConfig  String? // JSON: 엑셀 시트 순서, 헤더 이름, 사용할 시트 종류 등
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  channels        Channel[]
+  agents          Agent[]
+  monitoredUrls   MonitoredUrl[]
+  monitoredBoards MonitoredBoard[]
+  issues          ReportItemIssue[]
+  rules           ClassificationRule[]
+  slaPolicies     SlaPolicy[]
+  categoryGroups  CategoryGroup[]
+}
+
+model Channel {
+  id         Int      @id @default(autoincrement())
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  Int
+  type       String
+  externalId String
+  name       String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  issues ReportItemIssue[]
+}
+
+model ClassificationRule {
+  id        Int      @id @default(autoincrement())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  keyword   String
+  category  String
+  severity  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([isActive])
+}
+
+model Agent {
+  id            String   @id @default(cuid())
+  name          String
+  avatar        String?
+  status        String   @default("offline") // available, busy, away, offline
+  handling      Int      @default(0)
+  todayResolved Int      @default(0)
+  avgHandleSec  Int      @default(0)
+  channelFocus  String   @default("[]") // JSON array of 담당 게임명
+  email         String?
+  phone         String?
+  department    String?
+  position      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  schedules          AgentSchedule[]
+  reports            Report[]
+  assignedIssues     ReportItemIssue[]            @relation("IssueAssignedAgent")
+  authoredComments   IssueComment[]
+  shareLogs          IssueShareLog[]
+  classificationLogs AIClassificationLog[]
+  noticeReads        CustomerFeedbackNoticeRead[]
+
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+
+  @@index([status])
+  @@index([isActive])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model AgentSchedule {
+  id      String @id @default(cuid())
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // 스케줄 타입 (weekly: 주간 반복, specific: 특정 날짜)
+  scheduleType String  @default("weekly") // weekly, specific
+  dayOfWeek    Int? // 0=일요일, 1=월요일, ..., 6=토요일 (weekly용)
+  specificDate String? // YYYY-MM-DD 형식 (specific용)
+
+  // 근무 시간
+  startTime String // HH:mm 형식 (예: "09:00")
+  endTime   String // HH:mm 형식 (예: "18:00")
+
+  // 근무 타입
+  workType String? // "주간", "오후", "야간"
+
+  // 활성화 여부
+  isActive Boolean @default(true)
+
+  // 메모
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([scheduleType])
+  @@index([dayOfWeek])
+  @@index([specificDate])
+}
+
+model SlaPolicy {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  severity    String // 'critical', 'high', 'medium', 'low' or severity number as string
+  responseSec Int // Response time in seconds (e.g. 600 for 10 minutes)
+  channel     String // 'discord' | 'slack' | 'email' | 'webhook'
+  target      String // Webhook URL or email address
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([isActive])
+  @@index([severity])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  action    String // 'LOGIN', 'ISSUE_STATUS_CHANGE', 'SLA_VIOLATION', etc.
+  meta      String? // JSON string for additional metadata
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// 모니터링 키워드 (Discord/Naver 등에서 특정 키워드 감지)
+model MonitoringKeyword {
+  id        Int      @id @default(autoincrement())
+  type      String // 'discord' | 'naver' | 'system'
+  word      String // 감지할 키워드
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([enabled])
+  @@index([word])
+}
+
+// 모니터링 설정 (크롤링 주기, 쿨타임 등)
+model MonitoringConfig {
+  key         String   @id // 설정 키 (예: 'crawler.interval', 'crawler.cooldown')
+  value       String // 설정 값 (JSON 문자열 또는 단순 문자열)
+  description String? // 설정 설명
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 원본 로그 (이슈로 승격되기 전 단계의 원본 데이터)
+model RawLog {
+  id          String   @id @default(cuid())
+  source      String // 'discord' | 'naver' | 'system'
+  content     String // 원본 내용
+  author      String? // 작성자
+  timestamp   DateTime // 원본 타임스탬프
+  isProcessed Boolean  @default(false) // 이슈로 승격되었는지 여부
+  metadata    String? // 추가 메타데이터 (JSON 문자열)
+  boardId     Int?
+  articleId   String?
+
+  processingStatus String    @default("NEW")
+  attempts         Int       @default(0)
+  lastError        String?
+  lockedAt         DateTime?
+  nextRetryAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([source])
+  @@index([isProcessed])
+  @@index([timestamp])
+  @@index([createdAt])
+  @@index([boardId])
+  @@index([articleId])
+  @@index([processingStatus, nextRetryAt])
+  @@index([processingStatus, isProcessed])
+}
+
+// 고객사 피드백 공지사항
+model CustomerFeedbackNotice {
+  id             Int      @id @default(autoincrement())
+  gameName       String // 게임명 (예: 'PUBG PC', 'PUBG MOBILE')
+  managerName    String // 담당자명
+  category       String // 카테고리 (예: '버그', '요청사항', '문의')
+  content        String // 내용
+  noticeDate     DateTime // 공지 날짜
+  screenshotPath String? // 스크린샷 이미지 경로 (슬랙에서 가져온 이미지)
+  slackChannelId String? // 슬랙 채널 ID (채널 링크 생성용)
+  slackTeamId    String? // 슬랙 팀 ID (채널 링크 생성용)
+  url            String? // 원문/참고 링크 (선택)
+  createdBy      String? // 작성자 (User ID 또는 Agent ID)
+  isActive       Boolean  @default(true) // 활성화 여부
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  reads CustomerFeedbackNoticeRead[]
+
+  @@index([isActive])
+  @@index([noticeDate])
+  @@index([createdAt])
+}
+
+// 고객사 피드백 공지 열람 로그
+model CustomerFeedbackNoticeRead {
+  id        Int                    @id @default(autoincrement())
+  notice    CustomerFeedbackNotice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  noticeId  Int
+  agent     Agent?                 @relation(fields: [agentId], references: [id])
+  agentId   String? // 열람한 에이전트 ID
+  readAt    DateTime               @default(now()) // 열람 시간
+  createdAt DateTime               @default(now())
+
+  @@unique([noticeId, agentId])
+  @@index([noticeId])
+  @@index([agentId])
+  @@index([readAt])
+}
+
+// 이슈 공유 로그 (Slack 등)
+model IssueShareLog {
+  id              Int             @id @default(autoincrement())
+  issue           ReportItemIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId         String
+  agent           Agent?          @relation(fields: [agentId], references: [id])
+  agentId         String? // 누가 보냈는지
+  target          String // 공유 대상 (예: 'Client_Channel', 'Internal_Channel')
+  sentAt          DateTime        @default(now()) // 전송 시간
+  status          String // 전송 상태 (SUCCESS, FAILED)
+  messageSnapshot String? // 보내진 메시지 내용 원본 (JSON 또는 텍스트)
+  errorMessage    String? // 실패 시 에러 메시지
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([issueId])
+  @@index([agentId])
+  @@index([sentAt])
+  @@index([status])
+}
+
+// AI 분류 수정 로그 (원문 vs AI예측 vs 사용자수정)
+model AIClassificationLog {
+  id      Int             @id @default(autoincrement())
+  issue   ReportItemIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId String
+  user    User?           @relation(fields: [userId], references: [id])
+  userId  Int? // 수정한 사용자 ID
+  agent   Agent?          @relation(fields: [agentId], references: [id])
+  agentId String? // 수정한 에이전트 ID
+
+  // 원문 데이터 (JSON)
+  originalData String // 원문 내용 (summary, detail 등)
+
+  // AI 예측 데이터 (JSON)
+  aiPrediction String // AI가 분류한 내용 (categoryGroupId, categoryId, severity, importance, trend 등)
+
+  // 사용자 수정 데이터 (JSON)
+  userCorrection String // 사용자가 수정한 내용
+
+  // 변경된 필드 목록
+  changedFields String? // JSON array: ['categoryGroupId', 'severity', ...]
+
+  createdAt DateTime @default(now())
+
+  @@index([issueId])
+  @@index([userId])
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+// YouTube 영상 자막 캐시 (할당량 절약)
+model YouTubeVideoCaptionCache {
+  id                    String   @id @default(cuid())
+  videoId               String   @unique // YouTube 영상 ID
+  captionText           String? // 자막 텍스트 (전체)
+  isBattlegroundsRelated Boolean @default(false) // 배틀그라운드 관련 여부 (자막 분석 결과)
+  analyzedAt            DateTime @default(now()) // 분석 시각
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([videoId])
+  @@index([isBattlegroundsRelated])
+}
+
+// --- SQLite 전용 backend/migrations 를 Prisma로 흡수 (PostgreSQL 신규 구축용) ---
+
+model AIPromptConfig {
+  id                 Int      @id @default(autoincrement())
+  name               String   @unique
+  displayName        String
+  description        String?
+  systemPrompt       String
+  userPromptTemplate String?
+  isActive           Boolean  @default(true)
+  version            Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([name])
+  @@index([isActive])
+}
+
+model IssueLock {
+  id             String   @id
+  issueId        String
+  userId         String
+  userName       String
+  lockedAt       DateTime @default(now())
+  expiresAt      DateTime
+  lastActivityAt DateTime @default(now())
+
+  @@unique([issueId])
+  @@index([expiresAt])
+}
+
+model StepFloating {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  position  String   @default("right")
+  sortOrder Int      @default(0)
+  isActive  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position])
+  @@index([isActive])
+}
+
+model HandoverRecord {
+  id         Int      @id @default(autoincrement())
+  workDate   String
+  workType   String
+  content    String   @default("")
+  authorId   String?
+  authorName String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([workDate, workType])
+  @@index([workDate])
+  @@index([workType])
+}
+
+model PartnerSentVideo {
+  platform String
+  videoId  String
+  sentAt   String
+
+  @@id([platform, videoId])
+}
+
+model WorkChecklistItem {
+  id           Int      @id @default(autoincrement())
+  title        String
+  sortOrder    Int      @default(0)
+  isActive     Int      @default(1)
+  workType     String   @default("전체")
+  validFrom    String?
+  validTo      String?
+  monthsOfYear String?
+  daysOfWeek   String?
+  url          String?
+  showInPC     Int      @default(0)
+  showInMO     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sortByTypes WorkChecklistItemSortByType[]
+  executions  WorkChecklistExecution[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([workType])
+  @@index([validFrom])
+  @@index([validTo])
+}
+
+model WorkChecklistExecution {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  itemId    Int
+  workDate  String
+  checked   Int      @default(0)
+  checkedAt String?
+  createdAt DateTime @default(now())
+
+  item WorkChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User              @relation(fields: [userId], references: [id])
+
+  @@unique([userId, itemId, workDate])
+  @@index([userId, workDate])
+  @@index([itemId])
+}
+
+model WorkChecklistBanner {
+  id        Int      @id
+  content   String?
+  updatedAt DateTime @updatedAt
+}
+
+model WorkChecklistItemSortByType {
+  workType  String
+  itemId    Int
+  sortOrder Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  item WorkChecklistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([workType, itemId])
+  @@index([workType, sortOrder])
+}
+
+model WorkChecklistAssignee {
+  workType  String
+  userId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([workType, userId])
+  @@index([workType])
+}
+
+model BoardListDailySnapshot {
+  monitoredBoardId Int
+  dateKst          String
+  postCount        Int       @default(0)
+  scanTotalRows    Int?
+  maxPagesUsed     Int?
+  computedAt       DateTime  @default(now())
+
+  board MonitoredBoard @relation(fields: [monitoredBoardId], references: [id], onDelete: Cascade)
+
+  @@id([monitoredBoardId, dateKst])
+  @@index([dateKst])
+  @@index([computedAt])
+}
+
+model CalendarEvent {
+  id        Int      @id @default(autoincrement())
+  platform  String
+  startDate String
+  endDate   String
+  title     String
+  link      String?
+  lineChannelId     String?
+  discordWebhookUrl String?
+  discordMention    String?
+  message           String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([platform])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([startDate, endDate])
+}
+
+model WorkNotification {
+  id                 String    @id
+  workName           String
+  notificationDate   String
+  notificationTime   String
+  lineChannelId      String
+  message            String?
+  isActive           Int       @default(1)
+  sent               Int       @default(0)
+  sentAt             DateTime?
+  intervalMinutes    Int?
+  windowStartTime    String?
+  windowEndTime      String?
+  lastSentAt         String?
+  discordWebhookUrl  String?
+  discordMention     String?
+  calendarEventId    Int?
+  repeatType         String?
+  startDate          String?
+  endDate            String?
+  dayOfWeek          Int?
+  dayOfMonth         Int?
+  lastSentDate       String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([notificationDate])
+  @@index([notificationTime])
+  @@index([isActive])
+  @@index([sent])
+  @@index([notificationDate, notificationTime])
+}
+
+model IssueCommentWatch {
+  issue         ReportItemIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId       String          @id
+  intervalSeconds Int
+  enabled       Int             @default(1)
+  nextRunAt     String
+  lastRunAt     String?
+  lastError     String?
+  createdAt     String
+  updatedAt     String
+
+  @@index([enabled, nextRunAt])
+}
+
+model LineChatTarget {
+  id          String   @id
+  type        String
+  targetId    String
+  name        String?
+  displayName String?
+  lastSeenAt  String
+  createdAt   String
+  updatedAt   String
+
+  @@index([type])
+}

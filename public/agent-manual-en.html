@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMGLOBAL User Manual (English)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        @media (max-width: 767px) {
+            body {
+                padding: 15px;
+            }
+        }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="markdown-body">
+    <h1>Agent Ops Wallboard V2 — User Guide</h1>
+<blockquote>
+<p><strong>Version</strong>: 2.5<br>
+<strong>Last updated</strong>: 2026-04-14<br>
+<strong>Audience</strong>: All users, including new agents</p>
+</blockquote>
+<blockquote>
+<p><strong>RAG (work guides):</strong> From <code>backend/</code>, run<br>
+<code>node scripts/import-user-manual-to-rag.js --replace --lang=all</code><br>
+to register <strong>both</strong> this file and <code>USER_MANUAL.md</code> into WorkGuide + embeddings. The AI assistant searches <code>language=en</code> guides when the UI is English, and <code>language=ko</code> when Korean.</p>
+</blockquote>
+<hr>
+<h2>Table of contents</h2>
+<ol>
+<li><a href="#1-getting-started">Getting started</a></li>
+<li><a href="#2-main-screen">Main screen</a></li>
+<li><a href="#3-working-with-issues">Working with issues</a></li>
+<li><a href="#4-daily-workflow">Daily workflow</a></li>
+<li><a href="#5-advanced-features">Advanced features</a></li>
+<li><a href="#6-ai-assistant">AI assistant</a></li>
+<li><a href="#7-notices">Notices</a></li>
+<li><a href="#8-desktop-notifications">Desktop notifications</a></li>
+<li><a href="#9-reports">Reports</a></li>
+<li><a href="#10-troubleshooting">Troubleshooting</a></li>
+<li><a href="#11-faq">FAQ</a></li>
+<li><a href="#12-inzoi-forum-and-channel-monitoring">inZOI, forum and channel monitoring</a></li>
+<li><a href="#13-screen-by-screen-buttons--controls">Screen-by-screen buttons &amp; controls</a></li>
+</ol>
+<h2 id="guide-management">Admin: work guides, notifications & checklists</h2>
+<p>Administrators can maintain <strong>work guides</strong> (RAG-ready knowledge), <strong>work notifications</strong> (scheduled LINE/Discord messages), and <strong>work checklists</strong> (shift/day-specific tasks agents complete). Open <strong>Admin</strong> from the top navigation, then choose the corresponding management screen.<br>
+This HTML anchor (<code>#guide-management</code>) is linked from the work-guide admin page for quick reference.</p>
+<hr>
+<h2>1. Getting started</h2>
+<h3>1.1 What is this system?</h3>
+<p><strong>Agent Ops Wallboard V2</strong> is a real-time issue monitoring and handling workspace for game operations teams.</p>
+<p><strong>Highlights</strong></p>
+<ul>
+<li>Collects issues from sources such as <strong>Naver Cafe</strong> and <strong>Slack</strong></li>
+<li><strong>AI classification</strong> and severity</li>
+<li><strong>Live status</strong> tracking for each issue</li>
+<li><strong>AI assistant</strong> with RAG over internal guides</li>
+<li><strong>Desktop notifications</strong> for new or urgent items</li>
+<li><strong>Notices</strong> with filters by date/week/owner/game</li>
+<li><strong>Work checklists</strong> by date, work type, and weekday</li>
+<li><strong>Daily/weekly report</strong> helpers</li>
+</ul>
+<h3>1.2 Sign in</h3>
+<ol>
+<li>Open the <strong>URL</strong> provided by your administrator.</li>
+<li>Enter your <strong>email</strong> and <strong>password</strong>.</li>
+<li>Click <strong>Sign in</strong>.</li>
+</ol>
+<p>After a successful login you land on the main issue queue. Your name appears in the header when the session is valid.</p>
+<h3>1.3 Main layout (overview)</h3>
+<ul>
+<li><strong>Top bar</strong>: project selector, manual ingest, search, filters, navigation</li>
+<li><strong>KPI strip</strong>: open issues, Sev1, SLA risk, average handle time</li>
+<li><strong>Issue queue</strong> (center): priority block + general queue; switch card/list view</li>
+<li><strong>Agent status</strong> (side): who is online and basic load metrics</li>
+</ul>
+<hr>
+<h2>2. Main screen</h2>
+<h3>2.1 Project selection</h3>
+<p>Use the project dropdown to limit issues to one product/service or view <strong>all projects</strong>.</p>
+<h3>2.2 KPI dashboard</h3>
+<p>Watch <strong>open issues</strong>, <strong>Sev1</strong>, <strong>SLA due soon</strong>, and <strong>average handling time</strong>. Treat SLA-risk items as urgent.</p>
+<h3>2.3 Priority issues</h3>
+<p>Shows Sev1 and SLA-risk items (up to a limited count; more load as you scroll).</p>
+<h3>2.4 General queue</h3>
+<p>Lower-severity and waiting items. Toggle <strong>card</strong> vs <strong>list</strong> view from the queue toolbar.</p>
+<h3>2.5 Agent panel</h3>
+<p>See who is signed in and summary stats. Use it to coordinate handoffs.</p>
+<h3>2.6 Monitoring (ingest source) tabs</h3>
+<p>On the <strong>main issue board</strong>, above the shortcut cards, the <strong>Monitoring</strong> strip filters tickets by <strong>where they were collected</strong> (not by game/board code):</p>
+<ul>
+<li><strong>Issues · All sources</strong> — Naver, Discord, system, etc.</li>
+<li><strong>Issues · Naver Cafe</strong> — Naver only</li>
+<li><strong>Issues · Discord</strong> — Discord only</li>
+<li><strong>Issues · System &amp; other</strong> — system/other only</li>
+</ul>
+<p>The same choices appear under the <strong>Menu (☰) → Monitoring</strong> section.<br>
+In <strong>Search &amp; filters</strong>, the <strong>Channel</strong> dropdown is the <strong>game/crawler code</strong> (which monitored board), which is a different axis from the tabs above.</p>
+<hr>
+<h2>3. Working with issues</h2>
+<ol>
+<li><strong>Open</strong> an issue from the queue to read detail, history, and links.</li>
+<li><strong>Assign / progress</strong> according to your team rules (status fields, owner, etc.).</li>
+<li>Use <strong>source links</strong> (e.g. Naver Cafe) when you need the original thread.</li>
+<li><strong>AI assistant</strong> can suggest replies or look up guides; always verify before sending to players.</li>
+</ol>
+<hr>
+<h2>4. Daily workflow</h2>
+<p>Typical flow:</p>
+<ol>
+<li>Sign in and select the correct <strong>project</strong></li>
+<li>Clear <strong>priority / SLA-risk</strong> items first</li>
+<li>Process the <strong>general queue</strong>; use filters and search for your scope</li>
+<li>Complete <strong>checklist</strong> items for your shift if your team uses them</li>
+<li>Hand off cleanly using <strong>agent status</strong> and any <strong>handover</strong> tools your tenant enables</li>
+</ol>
+<hr>
+<h2>5. Advanced features</h2>
+<ul>
+<li><strong>Manual ingest</strong>: add a post URL when automation missed it (permissions may apply).</li>
+<li><strong>Filters</strong>: ingest source via <strong>Monitoring</strong> tabs; <strong>Channel</strong> = game/crawler; plus severity, date, text search.</li>
+<li><strong>Menu → Forum monitoring</strong>: separate page for <strong>Discourse daily trends</strong> (hot/new topics, category summary)—not the same data as the ticket queue.</li>
+<li><strong>Calendar / schedules</strong>: depends on role; see admin-configured menus.</li>
+</ul>
+<hr>
+<h2>6. AI assistant</h2>
+<p>The assistant retrieves <strong>work guides</strong> and policies your admins published. Ask operational questions in natural language; confirm critical answers against official sources.</p>
+<hr>
+<h2>7. Notices</h2>
+<p>Internal announcements with filters (date range, week, owner, game, etc.). Read required notices so you do not miss policy changes.</p>
+<hr>
+<h2>8. Desktop notifications</h2>
+<p>If enabled in the browser, you can receive alerts for new issues or important events. Keep browser notification permission on for the wallboard origin if your team relies on it.</p>
+<hr>
+<h2>9. Reports</h2>
+<p>Use the <strong>daily</strong> and <strong>weekly</strong> report tools (from the menu your administrator exposes) to export or generate summaries. Exact fields depend on project configuration.</p>
+<hr>
+<h2>10. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>What to try</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cannot sign in</td>
+<td>Reset password via admin; check caps lock and URL</td>
+</tr>
+<tr>
+<td>Empty queue</td>
+<td>Confirm <strong>project</strong> selection; check filters</td>
+</tr>
+<tr>
+<td>Stale data</td>
+<td>Hard refresh; confirm VPN/network; ask if workers are running</td>
+</tr>
+<tr>
+<td>AI empty answer</td>
+<td>Guides may be missing; ask an admin to upload content</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>11. FAQ</h2>
+<p><strong>Q: Where is the user manual link?</strong><br>
+A: In the header, next to the language switcher—opens this manual in a new tab.</p>
+<p><strong>Q: Can I use English UI?</strong><br>
+A: Yes, if your tenant enabled i18n; use the language switcher.</p>
+<p><strong>Q: Who configures LINE/Discord notifications?</strong><br>
+A: Admins under <strong>Work notification</strong> settings.</p>
+<hr>
+<h2>12. inZOI, forum and channel monitoring</h2>
+<p>For titles such as <strong>inZOI</strong>, the app separates <strong>per-ticket channels</strong> (Naver / Discord / …) from the <strong>official forum (Discourse) trend dashboard</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>What you see</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tickets</td>
+<td>Individual issues, owners, SLA</td>
+<td><strong>Main board</strong> + Monitoring tabs / filters</td>
+</tr>
+<tr>
+<td>Forum trends</td>
+<td>Daily hot/new topics, category rollup</td>
+<td><strong>Menu → Forum monitoring</strong> (dedicated page)</td>
+</tr>
+<tr>
+<td>Crawl controls</td>
+<td>Keywords, triggers, boards</td>
+<td>Top nav <strong>Monitoring</strong> (ADMIN/LEAD) — <strong>not</strong> the same as Forum monitoring</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Forum monitoring page</strong> loads the latest <strong>daily report</strong> from the forum monitoring API. Use <strong>Refresh</strong> and <strong>API docs</strong> as needed. In dev, the app calls <code>/forum-api</code>, proxied to the forum service (default port 9090).</p>
+<p><strong>Issue detail</strong>: Discourse-sourced items may show a <strong>hero image</strong> parsed from the ingest preamble when available.</p>
+<hr>
+<h2>13. Screen-by-screen buttons &amp; controls</h2>
+<p>Reference tables for major buttons and toggles. To load <strong>both</strong> the Korean and English manuals into <strong>Guide Management (RAG)</strong>, admins run:</p>
+<pre><code class="language-bash">cd backend &amp;&amp; node scripts/import-user-manual-to-rag.js --replace --lang=all
+</code></pre>
+<p>Each <code>###</code> subsection becomes a separate searchable guide chunk (same structure as <code>USER_MANUAL.md</code>).</p>
+<h3>13.1 Global header</h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App title</td>
+<td>Go to <strong>main issue board</strong></td>
+</tr>
+<tr>
+<td>Project dropdown</td>
+<td>Scope data to a project (or all)</td>
+</tr>
+<tr>
+<td><strong>☰ Menu</strong></td>
+<td>Navigate to monitoring, work, reference, admin screens</td>
+</tr>
+<tr>
+<td><strong>Manual ingest</strong></td>
+<td>Open Naver café URL ingest modal</td>
+</tr>
+<tr>
+<td>WebSocket badge</td>
+<td>Connection status / reconnect</td>
+</tr>
+<tr>
+<td>AI icon</td>
+<td>Open AI assistant</td>
+</tr>
+<tr>
+<td>Calendar icon</td>
+<td>Navigate to <code>/calendar</code></td>
+</tr>
+<tr>
+<td>Logout</td>
+<td>End session</td>
+</tr>
+</tbody>
+</table>
+<h3>13.2 Menu (☰) entries</h3>
+<p><strong>Monitoring</strong>: All issues, Naver (+ manual ingest), Discord, System, <strong>Forum monitoring</strong> (Discourse daily report page).<br>
+<strong>Work</strong>: Work checklist, Handover.<br>
+<strong>Reference</strong>: AI assistant, Notices, Notification settings, Calendar.<br>
+<strong>Admin</strong>: Checklist management, Step floating, <strong>Guide management</strong>, Work notifications.<br>
+<strong>Agents + admins</strong>: Comment watch management.</p>
+<h3>13.3 Main board extras</h3>
+<p><strong>Monitoring tabs</strong>: Same source filters as the menu. <strong>Shortcut cards</strong>: Notices, checklist, handover.<br>
+<strong>Customer feedback notices</strong>: Slack user picker (admins), compose/cancel, <strong>Collect from Slack</strong>.</p>
+<h3>13.4 Search &amp; filter panel (collapsible)</h3>
+<p>Toggle header / ▼. Search box (+ clear <strong>✕</strong>), game/channel select, severity, category, date range, reset date, <strong>reset all filters</strong>, show/hide completed issues, bulk <strong>clear selection</strong>, agent status, KPI cards.</p>
+<h3>13.5 Issue cards / rows</h3>
+<p>Open detail on row click; checkbox multi-select; <strong>Read</strong>, <strong>Process</strong>, <strong>Exclude from report</strong> (when shown); original link.</p>
+<h3>13.6 Issue detail — header &amp; Slack share</h3>
+<p><strong>Capture screenshot</strong> (when no post images), <strong>Share to Slack</strong> (modal: channel, recipients, text, optional image/video, send/cancel), <strong>Close</strong>. Original pane: open link, gallery click → larger view.</p>
+<h3>13.7 Issue detail — triage &amp; comments</h3>
+<p>Status and assignee dropdowns; category <strong>Save</strong> (read-only if locked); edit AI summary; sentiment analyze; comment submit; Naver <strong>comment watch</strong> interval (requires server worker).</p>
+<h3>13.8 Manual ingest modal</h3>
+<p>URL, optional cookies, <strong>Start ingest</strong> / <strong>Cancel</strong>.</p>
+<h3>13.9 Forum monitoring</h3>
+<p><strong>Refresh</strong>, <strong>API docs</strong>; hot/new topic rows link to forum URLs when present.</p>
+<h3>13.10 Guide Management (admin)</h3>
+<p>Search, type filter, <strong>File upload</strong> (batch), <strong>New guide</strong>, <strong>View file</strong> / <strong>Edit</strong> / <strong>Delete</strong> per row; modal save/cancel. Manual link opens <code>#guide-management</code>.</p>
+<hr>
+<h2>Appendix</h2>
+<h3>A. Keyboard shortcuts</h3>
+<ul>
+<li><strong>F5</strong>: Refresh the page</li>
+<li><strong>Esc</strong>: Close modal dialogs</li>
+<li><strong>Enter</strong>: Run search (when the search field is focused)</li>
+<li><strong>Ctrl+F</strong>: Browser find-in-page</li>
+</ul>
+<h3>B. Supported browsers</h3>
+<ul>
+<li><strong>Chrome</strong> (recommended)</li>
+<li><strong>Edge</strong></li>
+<li><strong>Firefox</strong></li>
+<li>Safari may limit some features</li>
+</ul>
+<h3>C. Issue status workflow</h3>
+<pre><code>OPEN → TRIAGED → IN_PROGRESS → WAITING (optional) → RESOLVED → VERIFIED (optional)
+</code></pre>
+<h3>D. Severity (SLA examples)</h3>
+<ul>
+<li><strong>Sev1</strong>: Urgent (example SLA: 1 hour)</li>
+<li><strong>Sev2</strong>: High (example SLA: 4 hours)</li>
+<li><strong>Sev3</strong>: Normal (example SLA: 24 hours)</li>
+</ul>
+<h3>E. Support</h3>
+<p>Contact your administrator for access or system issues.</p>
+<hr>
+<p><strong>Document version</strong>: 2.5<br>
+<strong>Last updated</strong>: 2026-04-14<br>
+<strong>Owner</strong>: Agent Ops Team</p>
+<hr>
+<h2>Change history</h2>
+<ul>
+<li><strong>2026-04-14</strong>: v2.5 — RAG import documents <code>--lang=all</code>; appendix added; Guide Management aligned with section 13 tables.</li>
+</ul>
+
+</body>
+</html>

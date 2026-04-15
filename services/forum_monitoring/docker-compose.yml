@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: forum
+      POSTGRES_DB: forum_monitoring
+    ports:
+      - "55432:5432"
+    volumes:
+      - forum_monitoring_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "56379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Compose 네트워크에서는 호스트 postgres/redis 사용 (.env에 localhost가 있어도 덮어씀)
+      DATABASE_URL: postgresql+asyncpg://forum:forum@postgres:5432/forum_monitoring
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "9090:9090"
+    command: >
+      bash -lc "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 9090"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://forum:forum@postgres:5432/forum_monitoring
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    command: >
+      bash -lc "celery -A app.workers.celery_app worker -l INFO"
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://forum:forum@postgres:5432/forum_monitoring
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    command: >
+      bash -lc "celery -A app.workers.celery_app beat -l INFO"
+
+volumes:
+  forum_monitoring_pg:
+

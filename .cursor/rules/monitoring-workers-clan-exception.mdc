@@ -1,0 +1,23 @@
+---
+description: Naver Cafe 모니터링 워커 수정 시 클랜 워커 전용 로직 격리 유지
+globs: backend/workers/monitoring/*.worker.js
+alwaysApply: false
+---
+
+# 모니터링 워커 - 클랜 워커 전용 로직
+
+## 클랜 워커 예외 처리 (naverCafeClan.worker.js만 해당)
+
+`naver.excludedBoards`(수집 제외 게시판)에 "클랜/방송/디스코드"가 있어도 **클랜 워커는 해당 게시판을 항상 수집**합니다.
+
+### 구현 위치
+
+- **파일**: `backend/workers/monitoring/naverCafeClan.worker.js`
+- **함수**: `loadExcludedBoardsForClanWorker()` (클랜 워커 전용)
+- **상수**: `CLAN_TARGET_BOARD_PATTERNS`
+
+### 수정 시 주의사항
+
+1. **공통 모듈 추출 금지**: `loadExcludedBoardsForClanWorker`와 `naverCafe.worker.js`의 `loadExcludedBoards()`를 공통 함수로 합치지 말 것.
+2. **클랜 워커에만 적용**: 이 예외 로직은 `naverCafeClan.worker.js` 내부에만 존재해야 함.
+3. **일반 워커 영향 없음**: `naverCafe.worker.js`, `naverCafeBackfill.worker.js`는 기존 `naver.excludedBoards`를 그대로 적용 (클랜/방송/디스코드 제외됨).

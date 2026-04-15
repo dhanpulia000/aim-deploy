@@ -1,0 +1,63 @@
+{
+  "lang": {
+    "switcherAria": "Language"
+  },
+  "common": {
+    "loading": "Loading…",
+    "processingTitle": "Processing issues…",
+    "processingProgressLabel": "Progress",
+    "processingHint": "Please keep this window open.",
+    "logoTitle": "Go to home",
+    "userManual": "User guide",
+    "userManualTitle": "User guide (opens in a new tab)"
+  },
+  "nav": {
+    "main": "Home",
+    "monitoring": "Monitoring",
+    "dailyReport": "Daily report",
+    "boardStatsGroup": "Board statistics",
+    "boardCounts": "Counts by board",
+    "listSnapshots": "List snapshots (period)",
+    "partnerArchiving": "Partner video archiving",
+    "calendar": "Calendar",
+    "admin": "Admin"
+  },
+  "admin": {
+    "pageTitle": "Data management",
+    "tabs": {
+      "agents": "Agents ({{count}})",
+      "schedules": "Schedules",
+      "scheduleCalendar": "Schedule calendar",
+      "sla": "SLA policies",
+      "categories": "Categories",
+      "projects": "Projects",
+      "prompts": "AI prompts",
+      "performance": "Agent performance"
+    }
+  },
+  "login": {
+    "titleSignIn": "Sign in",
+    "titleOtp": "Email verification",
+    "subtitleOtp": "We sent a code to {{email}}. Check your inbox.",
+    "subtitlePassword": "Sign in to switch projects.",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "agentIdOptional": "Agent ID (optional)",
+    "agentIdHint": "For legacy report uploads",
+    "agentIdPlaceholder": "e.g. a1, a2, a3",
+    "otpLabel": "Verification code (6 digits)",
+    "backToPassword": "← Back to password",
+    "resend": "Resend code",
+    "resendIn": "Resend in {{seconds}}s",
+    "submitSignIn": "Sign in",
+    "submitVerify": "Verify",
+    "submittingSignIn": "Signing in…",
+    "submittingVerify": "Verifying…",
+    "backToDashboard": "Back to dashboard",
+    "errorOtpLength": "Enter the 6-digit code.",
+    "errorSessionExpired": "Session expired. Sign in again.",
+    "errorUnknown": "An unexpected error occurred while signing in.",
+    "errorResend": "Could not resend the code."
+  }
+}

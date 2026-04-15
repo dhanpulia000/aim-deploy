@@ -1,0 +1,59 @@
+{
+  "name": "aimglobal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "overrides": {
+    "lodash": ">=4.17.22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:restart": "bash scripts/restart-vite-dev.sh",
+    "build": "node build-manual.js && vite build",
+    "build:check": "tsc && vite build",
+    "preview": "vite preview",
+    "start": "bash scripts/safe-start.sh",
+    "deploy:server": "bash scripts/deploy-server.sh",
+    "start:pm2": "pm2 start ecosystem.config.cjs",
+    "stop:pm2": "pm2 stop aimforglobal-backend",
+    "restart:pm2": "pm2 restart aimforglobal-backend",
+    "delete:pm2": "pm2 delete aimforglobal-backend",
+    "logs:pm2": "pm2 logs aimforglobal-backend",
+    "status:pm2": "pm2 status",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "github-markdown-css": "^5.8.1",
+    "i18next": "^26.0.4",
+    "markdown-it": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^17.0.2",
+    "react-virtuoso": "^4.15.0",
+    "recharts": "^2.10.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^1.0.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^23.0.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.0"
+  }
+}

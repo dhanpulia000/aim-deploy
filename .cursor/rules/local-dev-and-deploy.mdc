@@ -1,0 +1,33 @@
+---
+description: 로컬(WSL) 개발·Cursor 연결·원격 서버 배포 흐름
+alwaysApply: true
+---
+
+# AIM 로컬 개발 및 원격 배포
+
+## Cursor / WSL
+
+- Windows에서는 **WSL 배포판 `Ubuntu`**로 연결한다. **`docker-desktop`** WSL에는 연결하지 않는다 (bash 없음, Cursor 서버 설치 실패).
+- 프로젝트는 **WSL 리눅스 파일시스템**에서 연다 (예: `/home/<user>/work/AIMONITORING`). `C:\Users\...` NTFS 경로만으로 열면 느리거나 `npm`/파일 감시 이슈가 날 수 있다.
+
+## 로컬에서 동시에 띄우기
+
+- **프론트 (Vite, 기본 5175)**: 저장소 루트에서 `npm install` 후 `npm run dev`. 원본 프로젝트(5173)와 동시 실행 가능. `.env.development`로 `VITE_BACKEND_URL` / `VITE_DEV_PORT` 조정.
+- **백엔드 (기본 9080)**: `backend/`에서 `npm install` 후 `npm run dev`. 처음이면 `cp .env.template .env` 후 `PORT=9080`, `DATABASE_URL`, `JWT_SECRET` 설정. DB 최초: `cd backend && npx prisma migrate deploy` (필요 시 `npx prisma db seed`).
+- Vite는 `/api`, `/uploads`를 `VITE_BACKEND_URL`(기본 `http://127.0.0.1:9080`)으로 프록시한다.
+- 네이버 카페 등 **Playwright** 사용 시: `cd backend && npx playwright install` (한 번).
+
+## Git
+
+- **`backend/.env` 및 비밀값은 커밋하지 않는다.**
+
+## 원격 서버 배포 (프로덕션)
+
+- 서버에서 저장소 디렉터리로 이동 후 `git pull`.
+- 의존성 변경 시: 루트 `npm install`, `backend/npm install` 필요할 수 있음.
+- **단일 명령 배포**: 저장소 루트에서 `bash scripts/deploy-server.sh` (또는 `npm run deploy:server`). 동작: 루트 `npm run build`로 `dist/` 생성 후 `pm2 restart aimforglobal-backend --update-env`.
+- 상세·체크리스트는 루트 **`BUILD_AND_DEPLOY.md`** 를 따른다.
+
+## 운영 서버 메모
+
+- 프론트 개발용 **Vite(5173)를 서버에 상시 띄우지 않는다.** 운영은 백엔드가 **`dist/` 정적 파일**을 서빙하는 구조다.

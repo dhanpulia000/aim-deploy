@@ -1,0 +1,185 @@
+{
+  "common": {
+    "backToMain": "← Back to main"
+  },
+  "dailyReport": {
+    "title": "Download daily report",
+    "quickDates": "Quick date range",
+    "today": "Today",
+    "lastDays": "Last {{count}} days",
+    "projectSelect": "Project",
+    "projectOptional": "Project (optional)",
+    "allProjects": "All projects",
+    "projectHint": "If no project is selected, data from all projects is included.",
+    "period": "Report period",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "download": "Download daily report",
+    "downloading": "Downloading…",
+    "selectedRange": "Selected: {{start}} ~ {{end}}",
+    "selectedProject": "Project: {{name}}",
+    "includedSheetsTitle": "Included sheets",
+    "sheets": {
+      "summary": "SUMMARY: Work statistics by type",
+      "voc": "VoC: User trend",
+      "issue": "ISSUE: Important issues shared to customers",
+      "data": "Data: Daily integrated report for issues/requests/notices",
+      "index": "INDEX: Category map, rules, stats",
+      "volume": "Post volume: Posts by time slot"
+    },
+    "errors": {
+      "needDates": "Please select both start and end dates.",
+      "startAfterEnd": "Start date cannot be later than end date.",
+      "downloadFailed": "Download failed",
+      "downloadFailedGeneric": "Failed to download daily report."
+    },
+    "alerts": {
+      "downloaded": "Daily report downloaded."
+    }
+  },
+  "weeklyReport": {
+    "title": "Weekly report generator",
+    "ui": {
+      "summaryHeading": "Weekly SUMMARY report",
+      "summarySubtitle": "Download trends for in-game, content, anti-cheat, and community in a single Excel file.",
+      "backToDashboard": "Back to dashboard",
+      "step1Title": "1. Channel (filename prefix)",
+      "step1Hint": "Same template; only the downloaded filename differs by channel.",
+      "step2Title": "2. Period",
+      "weekAutoHint": "Automatically aligned to Monday–Sunday.",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "applyLastWeek": "Apply last week",
+      "applyThisWeek": "Apply this week",
+      "applyWeekContaining": "Week containing selected date",
+      "step3Title": "3. Download",
+      "step3Hint": "The Excel includes an overview, best/worst issues of the week, and detailed tables by category.",
+      "vocCardTitle": "Weekly report · {{label}}",
+      "vocCardSubtitle": "Source: Upload daily VoC report Excel · Output: Generate weekly monitoring report Excel",
+      "vocStep1Title": "1. Upload source file (daily VoC report Excel)",
+      "refreshList": "Refresh list",
+      "loadingList": "Loading list…",
+      "emptySources": "No sources uploaded.",
+      "generating": "Generating…",
+      "delete": "Delete",
+      "vocStep2Title": "2. Report period",
+      "periodAuto": "Weekly (auto)",
+      "periodCustom": "Custom range",
+      "vocStep3Title": "3. Generate outputs & download",
+      "generatingBannerTitle": "Generating output",
+      "generatingBannerBody": "The server is generating the weekly report Excel. It may take a few minutes. When done, the list below updates. If you only see the alert and the list is empty, click “Refresh outputs” to check.",
+      "refreshOutputs": "Refresh outputs",
+      "outputReadyHint": "Outputs will appear here when generation completes.",
+      "emptyOutputs": "No outputs generated.",
+      "download": "Download",
+      "guideTitle": "📌 What gets generated",
+      "guide": {
+        "li1": "The report header auto-fills target, period, and author.",
+        "li2": "Includes overview and best/worst trend blocks for the week.",
+        "li3": "Generates tables by section: in-game, content, anti-cheat, community, esports, other.",
+        "li4": "Description uses AI summary first (aiClassificationReason → summary → detail).",
+        "li5": "Link column uses numeric hyperlink “1” and applies thin borders to all cells."
+      },
+      "downloadSummary": "Download weekly SUMMARY Excel",
+      "preparingDownload": "Preparing download…",
+      "upload": "Select file and upload",
+      "uploading": "Uploading…",
+      "generate": "Generate output from this source",
+      "selectStartFirst": "Select a start date first."
+    },
+    "errors": {
+      "needPeriod": "Please select a period.",
+      "downloadFailed": "Weekly report download failed.",
+      "downloadError": "An error occurred while downloading the weekly report.",
+      "needFile": "Please select a file.",
+      "uploadFailed": "Upload failed.",
+      "uploadError": "Upload failed.",
+      "timeout": "The request timed out. Please try again.",
+      "backendUnreachable": "Cannot reach the backend. Is it running (default port 9080)?",
+      "confirmDeleteSource": "Delete this source file?",
+      "deleteFailed": "Delete failed.",
+      "invalidRange": "Please enter a valid start and end date.",
+      "generateFailed": "Generation failed.",
+      "generated": "Output generated.",
+      "outputNotFound": "Output file not found. Please regenerate."
+    },
+    "alerts": {
+      "downloaded": "Weekly SUMMARY Excel downloaded.",
+      "sourceUploaded": "Source file uploaded."
+    },
+    "nonJson": {
+      "gatewayTimeout": "Gateway timeout (502/504). Increase proxy_read_timeout or refresh the output list later to check completion.",
+      "htmlError": "The server returned an HTML error page instead of JSON. Refresh the output list to check if generation completed.",
+      "unhandled": "Cannot process server response. (HTTP {{status}})"
+    }
+  },
+  "partnerArchiving": {
+    "title": "Partner video archiving",
+    "subtitle": "Upload a partner list managed in Excel to generate an Excel file containing metadata for YouTube/TikTok/Instagram videos and posts uploaded during the selected week (Mon 00:00 ~ Sun 23:59). Battlegrounds-related and other content are split into separate sheets. (Videos are not downloaded; metadata only.)",
+    "errors": {
+      "quotaCheckFailed": "Quota check failed",
+      "unknownError": "Unknown error",
+      "needExcel": "Please upload the channel list Excel file.",
+      "timeout15m": "The request timed out (15 minutes). If there are many channels, split the list and retry.",
+      "timeout504": "Server response timed out (504 Gateway Timeout). Try again later or split the channel list.",
+      "failed": "Partner video archiving failed.",
+      "downloadFailed": "Failed to download Excel file."
+    },
+    "buttons": {
+      "checkQuota": "Check quota",
+      "checking": "Checking…",
+      "downloadTemplate": "Download template",
+      "collect": "Collect weekly metadata",
+      "collecting": "Collecting… (may take a few minutes depending on channel count)",
+      "downloadExcel": "Download Excel"
+    },
+    "quota": {
+      "daily": "Daily quota: {{n}} units",
+      "usedRemaining": "(used: {{used}} / remaining: {{remaining}})",
+      "untilReset": "Until reset: ~{{h}}h {{m}}m"
+    },
+    "form": {
+      "referenceDate": "Reference date",
+      "referenceHint": "Collect based on the week containing the selected date (Mon 00:00 ~ Sun 23:59, Korea time).",
+      "referenceWarn": "⚠️ Only videos uploaded during this period are collected. If results are small, check the period.",
+      "excelLabel": "Channel list Excel file",
+      "excelHintPrefix": "The first sheet must include columns in the header:",
+      "excelHintColumns": "channel name (required), platform (optional: YouTube / TikTok / Instagram), YouTube URL or channel ID (for YouTube), TikTok URL or username (for TikTok), Instagram URL or username (for Instagram), live URL (optional).",
+      "chooseFile": "Choose file",
+      "noFileChosen": "No file chosen",
+      "template": "Download template",
+      "channelIdHint": "⚠️ Entering channel IDs directly can save quota and improve accuracy.",
+      "channelIdExample": "(Channel ID example: UCxxxxxxxxxxxxxxxxxxxxxx)"
+    },
+    "progress": {
+      "title": "In progress: {{processed}} / {{total}} channels",
+      "completed": "Done",
+      "success": "Success:",
+      "error": "Errors:",
+      "videos": "Videos collected:",
+      "current": "Now processing:"
+    },
+    "result": {
+      "title": "Result",
+      "period": "Period:",
+      "periodHint": "(Mon 00:00 ~ Sun 23:59, Korea time)",
+      "weekLabel": "Week",
+      "weekFallback": "{{year}} week {{week}}",
+      "totalVideos": "Total videos",
+      "bgVideos": "Battlegrounds-related videos",
+      "otherVideos": "Other videos",
+      "successChannels": "Successful channels",
+      "errorChannels": "Error channels",
+      "errorDetailsTitle": "Error details ({{count}}):",
+      "unknownChannel": "Unknown",
+      "noErrorInfo": "No error info",
+      "moreErrors": "... and {{count}} more channels had errors",
+      "noErrorDetails": "Could not load error details. Check server logs.",
+      "filePath": "File path:"
+    },
+    "units": {
+      "count": "{{n}}"
+    }
+  }
+}
+
