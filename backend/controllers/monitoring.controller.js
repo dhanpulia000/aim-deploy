@@ -114,6 +114,34 @@ async function getLogs(req, res) {
 }
 
 /**
+ * inZOI standalone Trigger Word 알림 조회
+ */
+async function getInzoiStandaloneTriggerAlerts(req, res) {
+  try {
+    const { limit } = req.query;
+    const rows = await monitoringService.getInzoiStandaloneTriggerAlerts({ limit });
+    sendSuccess(res, rows);
+  } catch (error) {
+    logger.error('[MonitoringController] Failed to get standalone trigger alerts', { error: error.message });
+    sendError(res, 'inZOI standalone trigger 알림 조회 실패', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+}
+
+/**
+ * inZOI standalone Duplicate 알림 조회
+ */
+async function getInzoiStandaloneDuplicateAlerts(req, res) {
+  try {
+    const { limit } = req.query;
+    const rows = await monitoringService.getInzoiStandaloneDuplicateAlerts({ limit });
+    sendSuccess(res, rows);
+  } catch (error) {
+    logger.error('[MonitoringController] Failed to get standalone duplicate alerts', { error: error.message });
+    sendError(res, 'inZOI standalone duplicate 알림 조회 실패', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+}
+
+/**
  * 설정 조회
  */
 async function getConfig(req, res) {
@@ -234,6 +262,8 @@ module.exports = {
   createKeyword,
   deleteKeyword,
   getLogs,
+  getInzoiStandaloneTriggerAlerts,
+  getInzoiStandaloneDuplicateAlerts,
   getConfig,
   setConfig,
   triggerScan,

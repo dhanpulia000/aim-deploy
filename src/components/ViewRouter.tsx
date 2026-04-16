@@ -5,14 +5,29 @@ import NotificationSettings from "./NotificationSettings";
 const AgentAssistant = lazy(() => import("../pages/Agent/AgentAssistant"));
 const Calendar = lazy(() => import("../Calendar"));
 const WorkChecklist = lazy(() => import("../pages/Agent/WorkChecklist"));
-const WorkGuideManagement = lazy(() => import("../pages/Admin/WorkGuideManagement"));
-const WorkNotificationManagement = lazy(() => import("../pages/Admin/WorkNotificationManagement"));
-const WorkChecklistManagement = lazy(() => import("../pages/Admin/WorkChecklistManagement"));
-const StepFloatingManagement = lazy(() => import("../pages/Admin/StepFloatingManagement"));
+const WorkGuideManagement = lazy(
+  () => import("../pages/Admin/WorkGuideManagement"),
+);
+const WorkNotificationManagement = lazy(
+  () => import("../pages/Admin/WorkNotificationManagement"),
+);
+const WorkChecklistManagement = lazy(
+  () => import("../pages/Admin/WorkChecklistManagement"),
+);
+const StepFloatingManagement = lazy(
+  () => import("../pages/Admin/StepFloatingManagement"),
+);
 const HandoverPage = lazy(() => import("../pages/Agent/HandoverPage"));
 const NoticesPage = lazy(() => import("../pages/Notices/NoticesPage"));
-const CommentWatchManagement = lazy(() => import("../pages/Admin/CommentWatchManagement"));
-const ForumMonitoringPage = lazy(() => import("../pages/ForumMonitoring/ForumMonitoringPage"));
+const CommentWatchManagement = lazy(
+  () => import("../pages/Admin/CommentWatchManagement"),
+);
+const ForumMonitoringPage = lazy(
+  () => import("../pages/ForumMonitoring/ForumMonitoringPage"),
+);
+const InzoiStandaloneAlertsPage = lazy(
+  () => import("../pages/InzoiStandalone/InzoiStandaloneAlertsPage"),
+);
 
 function ViewLoadingFallback() {
   const { t } = useTranslation();
@@ -32,7 +47,10 @@ interface ViewRouterProps {
  * 뷰 라우터: 메뉴로 연 페이지 본문만 렌더링.
  * 상단 바(로고·메뉴)는 App에서 항상 표시하므로 여기서는 헤더 없이 본문만.
  */
-export function ViewRouter({ currentView, onBackToMain: _onBackToMain }: ViewRouterProps) {
+export function ViewRouter({
+  currentView,
+  onBackToMain: _onBackToMain,
+}: ViewRouterProps) {
   const wrap = (children: ReactNode, maxWidth?: string) => (
     <div className={`p-4 md:p-6 ${maxWidth ?? ""}`}>{children}</div>
   );
@@ -41,63 +59,63 @@ export function ViewRouter({ currentView, onBackToMain: _onBackToMain }: ViewRou
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <AgentAssistant />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "notices") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <NoticesPage />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "workGuideManagement") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <WorkGuideManagement />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "workChecklist") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <WorkChecklist />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "handover") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <HandoverPage />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "calendar") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <Calendar />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "workNotificationManagement") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <WorkNotificationManagement />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "workChecklistManagement") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <WorkChecklistManagement />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "stepFloatingManagement") {
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <StepFloatingManagement />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "notificationSettings") {
@@ -107,7 +125,7 @@ export function ViewRouter({ currentView, onBackToMain: _onBackToMain }: ViewRou
     return wrap(
       <Suspense fallback={<ViewLoadingFallback />}>
         <CommentWatchManagement />
-      </Suspense>
+      </Suspense>,
     );
   }
   if (currentView === "forumMonitoring") {
@@ -115,7 +133,16 @@ export function ViewRouter({ currentView, onBackToMain: _onBackToMain }: ViewRou
       <Suspense fallback={<ViewLoadingFallback />}>
         <ForumMonitoringPage />
       </Suspense>,
-      "max-w-6xl mx-auto"
+      "max-w-6xl mx-auto",
+    );
+  }
+  if (currentView === "inzoiStandaloneAlerts") {
+    return wrap(
+      <Suspense fallback={<ViewLoadingFallback />}>
+        <InzoiStandaloneAlertsPage />
+      </Suspense>,
+
+      "max-w-[1600px] mx-auto",
     );
   }
   return null;

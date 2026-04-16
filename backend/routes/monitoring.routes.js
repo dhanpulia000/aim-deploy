@@ -25,6 +25,8 @@ router.delete('/keywords/:id', requireRole(['ADMIN', 'LEAD']), asyncHandler(moni
 
 // 최근 수집 로그 조회
 router.get('/logs', asyncHandler(monitoringController.getLogs));
+router.get('/inzoi-standalone/trigger-alerts', asyncHandler(monitoringController.getInzoiStandaloneTriggerAlerts));
+router.get('/inzoi-standalone/duplicate-alerts', asyncHandler(monitoringController.getInzoiStandaloneDuplicateAlerts));
 
 // 모니터링 대상 게시판 목록 (Admin/Lead)
 router.get(

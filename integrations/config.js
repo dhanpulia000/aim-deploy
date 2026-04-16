@@ -14,12 +14,15 @@ export const INZOI_EXPORT_DIR = path.resolve(__dirname, "./exports");
 export const BASE_URL = "https://forum.playinzoi.com";
 
 // Priority alert Discord webhook (replace with your real webhook)
-export const DISCORD_ALERT_WEBHOOK =
-  "https://discord.com/api/webhooks/1445966123639111681/AuPxcSkDP_aCJFvFap0nkX6Tdi0qfi_aKo8GSA3eUISUbnLvTpO7OwCgF6rvMLKizAu-";
+export const DISCORD_ALERT_WEBHOOK = "";
+// export const DISCORD_ALERT_WEBHOOK =
+// "https://discord.com/api/webhooks/1445966123639111681/AuPxcSkDP_aCJFvFap0nkX6Tdi0qfi_aKo8GSA3eUISUbnLvTpO7OwCgF6rvMLKizAu-";
 
 // Optional global heartbeat webhook (can be the same as above)
-export const DISCORD_HEARTBEAT_WEBHOOK =
-  "https://discord.com/api/webhooks/1430803697671344199/IOq7b7bB3HeSQFC9DhOgtoMqA7yGvtN1EsCgb_8EXQMlFt5MwJjYdAfFovtYKfJQ0Fne";
+export const DISCORD_HEARTBEAT_WEBHOOK = "";
+
+// export const DISCORD_HEARTBEAT_WEBHOOK =
+// "https://discord.com/api/webhooks/1430803697671344199/IOq7b7bB3HeSQFC9DhOgtoMqA7yGvtN1EsCgb_8EXQMlFt5MwJjYdAfFovtYKfJQ0Fne";
 
 // How often to poll the forum (ms)
 export const CHECK_INTERVAL_MS = 60 * 1000; // 1 minute

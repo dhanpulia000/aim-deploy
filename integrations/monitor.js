@@ -21,7 +21,7 @@ const DUPLICATE_SIMILARITY_THRESHOLD = 0.8; // 0.80+ considered duplicate
 async function hasDuplicateAlertBeenSent(db, newId, originalId) {
   const row = await db.get(
     `SELECT 1 FROM duplicate_alerts WHERE new_topic_id = ? AND original_topic_id = ?`,
-    [newId, originalId]
+    [newId, originalId],
   );
   return !!row;
 }
@@ -30,10 +30,61 @@ async function recordDuplicateAlert(db, newId, originalId, score) {
   await db.run(
     `INSERT OR IGNORE INTO duplicate_alerts (new_topic_id, original_topic_id, similarity, alerted_at)
      VALUES (?, ?, ?, ?)`,
-    [newId, originalId, score, new Date().toISOString()]
+    [newId, originalId, score, new Date().toISOString()],
   );
 }
 
+async function recordTriggerWordAlert(
+  db,
+  { topicId, topicTitle, authorUsername, postNumber, keywords, message, link },
+) {
+  await db.run(
+    `INSERT INTO trigger_word_alerts
+      (topic_id, topic_title, author_username, post_number, keywords, message, link, alert_time)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      topicId,
+      topicTitle || "",
+      authorUsername || "",
+      postNumber || 0,
+      keywords || "",
+      message || "",
+      link || "",
+      new Date().toISOString(),
+    ],
+  );
+}
+
+async function recordDuplicateTopicAlertEvent(
+  db,
+  {
+    newTopicId,
+    newTopicTitle,
+    newTopicLink,
+    originalTopicId,
+    originalTopicTitle,
+    originalTopicLink,
+    matchType,
+    similarity,
+  },
+) {
+  await db.run(
+    `INSERT INTO duplicate_topic_alert_events
+      (new_topic_id, new_topic_title, new_topic_link, original_topic_id, original_topic_title, original_topic_link, match_type, similarity, alert_time)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      newTopicId,
+      newTopicTitle || "",
+      newTopicLink || "",
+      originalTopicId,
+      originalTopicTitle || "",
+      originalTopicLink || "",
+      matchType || "semantic",
+      similarity || 0,
+      new Date().toISOString(),
+    ],
+  );
+}
 
 // -----------------------------------------------------------------------------
 // Helpers: time, delay, keyword detection
@@ -61,13 +112,12 @@ function getKSTTimestamp() {
 
 function detectKeywords(text, keywords, ignoreWords) {
   const lowered = (text || "").toLowerCase();
-  const matched = keywords.filter((kw) =>
-    lowered.includes(kw.toLowerCase())
-  );
-  if (matched.length === 0) return { confirmed: false, matched: [], ignore: null };
+  const matched = keywords.filter((kw) => lowered.includes(kw.toLowerCase()));
+  if (matched.length === 0)
+    return { confirmed: false, matched: [], ignore: null };
 
   const ignoreMatch = ignoreWords.find((iw) =>
-    lowered.includes(iw.toLowerCase())
+    lowered.includes(iw.toLowerCase()),
   );
   if (ignoreMatch) {
     return { confirmed: false, matched, ignore: ignoreMatch };
@@ -150,11 +200,16 @@ function buildCombinedText(title, firstPostRaw) {
 }
 
 // Get or create embedding for a topic (title + first post)
-async function getOrCreateTopicEmbedding(db, topicId, titleFromArg, firstPostRawFromArg) {
+async function getOrCreateTopicEmbedding(
+  db,
+  topicId,
+  titleFromArg,
+  firstPostRawFromArg,
+) {
   // Try existing embedding
   const row = await db.get(
     `SELECT title, embedding FROM inzoi_topics WHERE id = ?`,
-    [topicId]
+    [topicId],
   );
 
   let title = titleFromArg || row?.title || "";
@@ -172,7 +227,7 @@ async function getOrCreateTopicEmbedding(db, topicId, titleFromArg, firstPostRaw
   if (!firstPostRaw) {
     const firstPostRow = await db.get(
       `SELECT raw_text FROM inzoi_posts WHERE topic_id = ? AND post_number = 1`,
-      [topicId]
+      [topicId],
     );
     firstPostRaw = firstPostRow?.raw_text || "";
   }
@@ -183,10 +238,10 @@ async function getOrCreateTopicEmbedding(db, topicId, titleFromArg, firstPostRaw
   const embArray = await embedText(combined);
   if (!embArray) return null;
 
-  await db.run(
-    `UPDATE inzoi_topics SET embedding = ? WHERE id = ?`,
-    [JSON.stringify(embArray), topicId]
-  );
+  await db.run(`UPDATE inzoi_topics SET embedding = ? WHERE id = ?`, [
+    JSON.stringify(embArray),
+    topicId,
+  ]);
 
   return embArray;
 }
@@ -197,7 +252,7 @@ async function findDuplicateTopic(db, newTopicId, newTitle, newFirstPostRaw) {
     db,
     newTopicId,
     newTitle,
-    newFirstPostRaw
+    newFirstPostRaw,
   );
   if (!newEmbedding) return null;
 
@@ -205,7 +260,7 @@ async function findDuplicateTopic(db, newTopicId, newTitle, newFirstPostRaw) {
     `SELECT id, slug, title, embedding
      FROM inzoi_topics
      WHERE id != ?`,
-    [newTopicId]
+    [newTopicId],
   );
 
   let best = null;
@@ -226,18 +281,21 @@ async function findDuplicateTopic(db, newTopicId, newTitle, newFirstPostRaw) {
     if (!otherEmb) {
       const firstPostRow = await db.get(
         `SELECT raw_text FROM inzoi_posts WHERE topic_id = ? AND post_number = 1`,
-        [row.id]
+        [row.id],
       );
-      const combinedOld = buildCombinedText(row.title, firstPostRow?.raw_text || "");
+      const combinedOld = buildCombinedText(
+        row.title,
+        firstPostRow?.raw_text || "",
+      );
       if (!combinedOld.trim()) continue;
 
       otherEmb = await embedText(combinedOld);
       if (!otherEmb) continue;
 
-      await db.run(
-        `UPDATE inzoi_topics SET embedding = ? WHERE id = ?`,
-        [JSON.stringify(otherEmb), row.id]
-      );
+      await db.run(`UPDATE inzoi_topics SET embedding = ? WHERE id = ?`, [
+        JSON.stringify(otherEmb),
+        row.id,
+      ]);
     }
 
     const score = cosineSimilarity(newEmbedding, otherEmb);
@@ -308,7 +366,7 @@ async function processTopic(db, topicSummary) {
       views,
       like_count || 0,
       excerpt || "",
-    ]
+    ],
   );
 
   // Fetch full topic (posts)
@@ -324,19 +382,18 @@ async function processTopic(db, topicSummary) {
     db,
     id,
     title,
-    firstPost?.raw || ""
+    firstPost?.raw || "",
   );
 
   // 🚫 Skip duplicate alerts for Bug Report category (ID = 7)
   if (category_id === 7) {
     console.log(`ℹ️ Duplicate detection skipped for Bug Report topic ${id}`);
   } else if (duplicate && duplicate.id !== id) {
-
     const alreadySent = await hasDuplicateAlertBeenSent(db, id, duplicate.id);
 
     if (alreadySent) {
       console.log(
-        `ℹ️ Duplicate alert suppressed (already sent): ${id} ≈ ${duplicate.id}`
+        `ℹ️ Duplicate alert suppressed (already sent): ${id} ≈ ${duplicate.id}`,
       );
     } else {
       const newUrl = buildPostUrl(id, slug, 1);
@@ -366,12 +423,22 @@ async function processTopic(db, topicSummary) {
       };
 
       await sendDiscordMessage(DISCORD_ALERT_WEBHOOK, payload);
+      await recordDuplicateTopicAlertEvent(db, {
+        newTopicId: id,
+        newTopicTitle: title,
+        newTopicLink: newUrl,
+        originalTopicId: duplicate.id,
+        originalTopicTitle: duplicate.title,
+        originalTopicLink: oldUrl,
+        matchType: duplicate.matchedBy || "semantic",
+        similarity: duplicate.score,
+      });
       await recordDuplicateAlert(db, id, duplicate.id, duplicate.score);
 
       console.log(
         `⚠️ Duplicate detected (first time): topic ${id} ≈ topic ${duplicate.id} (${(
           duplicate.score * 100
-        ).toFixed(2)}%)`
+        ).toFixed(2)}%)`,
       );
     }
   }
@@ -393,7 +460,7 @@ async function processTopic(db, topicSummary) {
       `SELECT raw_text, like_count
        FROM inzoi_posts
        WHERE topic_id = ? AND post_number = ?`,
-      [id, post_number]
+      [id, post_number],
     );
 
     const isNewPost = !existing;
@@ -424,7 +491,7 @@ async function processTopic(db, topicSummary) {
         raw,
         postCreatedAt,
         postLikeCount || 0,
-      ]
+      ],
     );
 
     if (isNewPost) {
@@ -434,14 +501,14 @@ async function processTopic(db, topicSummary) {
       const detection = detectKeywords(
         fullTextForDetection,
         PRIORITY_KEYWORDS,
-        IGNORE_KEYWORDS
+        IGNORE_KEYWORDS,
       );
 
       if (detection.ignore) {
         console.log(
           `⚠️ False positive suppressed: keywords=[${detection.matched.join(
-            ", "
-          )}] blocked_by="${detection.ignore}"`
+            ", ",
+          )}] blocked_by="${detection.ignore}"`,
         );
       }
 
@@ -485,12 +552,21 @@ async function processTopic(db, topicSummary) {
         };
 
         await sendDiscordMessage(DISCORD_ALERT_WEBHOOK, payload);
+        await recordTriggerWordAlert(db, {
+          topicId: id,
+          topicTitle: title,
+          authorUsername: username,
+          postNumber: post_number,
+          keywords: detection.matched.join(", "),
+          message: contentPreview || "",
+          link: postUrl,
+        });
         await delay(1000); // brief pause to avoid rate limits
         console.log(`🚨 Priority alert: topic=${id}, post #${post_number}`);
       }
     } else if (hasChanged) {
       console.log(
-        `✏️ Updated post topic=${id}, post #${post_number} (edited / likes changed)`
+        `✏️ Updated post topic=${id}, post #${post_number} (edited / likes changed)`,
       );
     }
   }
@@ -517,7 +593,7 @@ async function startMonitoring() {
       const latestTopics = await fetchLatestTopics(5); // or 5 pages
       const slice = latestTopics.slice(0, TOPIC_LIMIT_PER_CYCLE);
       console.log(
-        `🧾 Found ${latestTopics.length} topics, processing ${slice.length} of them.`
+        `🧾 Found ${latestTopics.length} topics, processing ${slice.length} of them.`,
       );
 
       for (const t of slice) {
@@ -549,7 +625,7 @@ async function startMonitoring() {
     }
 
     console.log(
-      `⏳ Sleeping ${(CHECK_INTERVAL_MS / 1000).toFixed(0)}s before next cycle...\n`
+      `⏳ Sleeping ${(CHECK_INTERVAL_MS / 1000).toFixed(0)}s before next cycle...\n`,
     );
     await delay(CHECK_INTERVAL_MS);
   }

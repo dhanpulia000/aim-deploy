@@ -57,5 +57,44 @@ export async function initDB() {
   );
 `);
 
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS trigger_word_alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      topic_id INTEGER,
+      topic_title TEXT,
+      author_username TEXT,
+      post_number INTEGER,
+      keywords TEXT,
+      message TEXT,
+      link TEXT,
+      alert_time TEXT
+    );
+  `);
+
+  await db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_trigger_word_alerts_time
+    ON trigger_word_alerts (alert_time DESC);
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS duplicate_topic_alert_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      new_topic_id INTEGER,
+      new_topic_title TEXT,
+      new_topic_link TEXT,
+      original_topic_id INTEGER,
+      original_topic_title TEXT,
+      original_topic_link TEXT,
+      match_type TEXT,
+      similarity REAL,
+      alert_time TEXT
+    );
+  `);
+
+  await db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_duplicate_topic_alert_events_time
+    ON duplicate_topic_alert_events (alert_time DESC);
+  `);
+
   return db;
 }
