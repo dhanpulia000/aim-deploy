@@ -9,6 +9,7 @@
     "restart": "bash scripts/cleanup-duplicate-backend.sh && nodemon server.js",
     "cleanup-duplicates": "bash scripts/cleanup-duplicate-backend.sh",
     "lint": "eslint . --ext js --ignore-path .gitignore",
+    "postinstall": "npm --prefix ../integrations ci --omit=dev",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },

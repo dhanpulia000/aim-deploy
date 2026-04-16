@@ -1,0 +1,15 @@
+# Runtime DB files
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Export outputs
+exports/*.xlsx
+
+# Logs
+logs/*
+
+# Keep folders tracked
+!data/.gitkeep
+!exports/.gitkeep
+!logs/.gitkeep
